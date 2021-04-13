@@ -1,7 +1,5 @@
 'use strict';
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
 // BANKIST APP
 
 // Data
@@ -36,6 +34,7 @@ const account4 = {
 const accounts = [account1, account2, account3, account4];
 
 // Elements
+const app = document.querySelector('.app');
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
 const labelBalance = document.querySelector('.balance__value');
@@ -61,9 +60,12 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = acc => {
+const displayMovements = (acc, sort = false) => {
   containerMovements.innerHTML = '';
-  acc.movements.forEach((el, i, arr) => {
+  const movs = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
+  movs.forEach((el, i, arr) => {
     const type = el > 0 ? 'deposit' : 'withdrawal';
     const html = `<div class="movements__row">
     <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
@@ -171,7 +173,20 @@ const closeAccount = e => {
 
 const requestLoan = e => {
   e.preventDefault();
-  console.log('loan accepted');
+  const amount = Number(inputLoanAmount.value);
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    currentAccount.movements.push(amount);
+    updateUI(currentAccount);
+  } else {
+    console.log(`You can't request more than 10% of the higher transiction.`);
+  }
+  inputLoanAmount.value = '';
+};
+let sorted = false;
+const sortMovements = e => {
+  e.preventDefault();
+  displayMovements(currentAccount, !sorted);
+  sorted = !sorted;
 };
 
 //EVENT LISTENERS
@@ -179,14 +194,10 @@ btnLogin.addEventListener('click', login);
 btnTransfer.addEventListener('click', transfer);
 btnClose.addEventListener('click', closeAccount);
 btnLoan.addEventListener('click', requestLoan);
+btnSort.addEventListener('click', sortMovements);
 
 const currencies = new Map([
   ['USD', 'United States dollar'],
   ['EUR', 'Euro'],
   ['GBP', 'Pound sterling'],
 ]);
-/////////////////////////////////////////////////
-
-//Filter returns all the items that satidfies the condition while find will
-//return only the first element that satisfies the contidion. ALSO the filter
-//method returns an ARRAY while find returns the element itself.
