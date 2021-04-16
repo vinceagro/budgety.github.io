@@ -167,25 +167,35 @@ const createUsername = accs => {
 createUsername(accounts);
 const updateUI = acc => {
   getCurrentTime();
-  //Display movements
   displayMovements(acc);
-  //Display balance
   calcDisplayBalance(acc);
-  //Display summery
   calcDisplaySummary(acc);
 };
 
-let currentAccount;
+const logOutTimer = () => {
+  const tick = () => {
+    const min = `${Math.trunc(time / 60)}`.padStart(2, 0);
+    const sec = `${time % 60}`.padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
 
-//ALWAYS LOGGED
+    if (time === 0) {
+      labelWelcome.textContent = `Log in to get started`;
+      clearInterval(timer);
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  };
+  let time = 300;
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
 
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+let currentAccount, timer;
 
 const login = e => {
   e.preventDefault();
-  getCurrentTime();
+
   currentAccount = accounts.find(
     acc => acc.username === inputLoginUsername.value.trim()
   );
@@ -193,6 +203,8 @@ const login = e => {
     //Clear imput filds
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+    timer ? clearInterval(timer) : timer;
+    timer = logOutTimer();
     //Display UI and welcome message
     containerApp.style.opacity = 1;
     labelWelcome.textContent = `Welcome ${currentAccount.owner.split(' ')[0]}`;
@@ -202,6 +214,8 @@ const login = e => {
 
 const transfer = e => {
   e.preventDefault();
+  timer ? clearInterval(timer) : timer;
+  timer = logOutTimer();
   const amount = +inputTransferAmount.value;
   const receiverUser = accounts.find(
     acc => acc.username === inputTransferTo.value
@@ -239,6 +253,8 @@ const closeAccount = e => {
 
 const requestLoan = e => {
   e.preventDefault();
+  timer ? clearInterval(timer) : timer;
+  timer = logOutTimer();
   const amount = +inputLoanAmount.value;
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
@@ -271,5 +287,3 @@ const currencies = new Map([
   ['EUR', 'Euro'],
   ['GBP', 'Pound sterling'],
 ]);
-
-setTimeout(() => console.log('PIZZA TIME'), 2000);
